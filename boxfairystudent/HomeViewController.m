@@ -8,6 +8,7 @@
 
 #import "HomeViewController.h"
 #import "StudentHomeViewController.h"
+#import "BXFStudentNavigationController.h"
 
 @interface HomeViewController ()
 
@@ -57,7 +58,8 @@
     //竖屏转横屏：https://www.cnblogs.com/niit-soft-518/p/5611298.html
     
     StudentHomeViewController *vc = [[StudentHomeViewController alloc] initWithNibName:@"StudentHomeViewController" bundle:nil];
-    [self.navigationController pushViewController:vc animated:YES];
+    BXFStudentNavigationController *nc = [[BXFStudentNavigationController alloc] initWithRootViewController:vc];
+    [self presentViewController:nc animated:YES completion:nil];
 }
 
 @end

@@ -37,7 +37,6 @@ NS_ASSUME_NONNULL_BEGIN
     NSMutableArray *scores;
 }
 
-@property(nonatomic, copy) NSString *sentenceText;
 @property (nonatomic, strong) ISEParams *iseParams;
 @property(nonatomic, assign) int currentIndex;
 @property(nonatomic, copy) NSMutableArray *recordedSoundURLs;

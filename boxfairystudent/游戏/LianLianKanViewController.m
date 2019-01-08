@@ -83,21 +83,24 @@
     } else {
         if(((UIImageView *)tap.view).image == backImage) {
             UIImageView *currentImageView = (UIImageView *)tap.view;
+                __weak __typeof(self) wself = self;
             [UIView transitionWithView:currentImageView duration:1  options:UIViewAnimationOptionTransitionFlipFromLeft animations:^{
-                currentImageView.image = cardArr[(int)tap.view.tag - 1];
+                        __strong typeof(wself) sself = wself;
+                currentImageView.image = sself->cardArr[(int)tap.view.tag - 1];
             }completion:^(BOOL finished) {
                 //[self viewAnimation];
-                if(currentImageView.image == lastImageView.image) { //判断相等
+                __strong typeof(wself) sself = wself;
+                if(currentImageView.image == sself->lastImageView.image) { //判断相等
                     NSLog(@"bingo");
-                    [uncoverdCards removeObject:currentImageView.image];
-                    if(uncoverdCards.count == 0) {  //全部找到
+                    [sself->uncoverdCards removeObject:currentImageView.image];
+                    if(sself->uncoverdCards.count == 0) {  //全部找到
                         NSLog(@"win");
                     }
                 } else {
                     NSLog(@"Oh, No");
-                    [uncoverdCards addObject:lastImageView.image];
+                    [sself->uncoverdCards addObject:sself->lastImageView.image];
                     [self flipBack:currentImageView];
-                    [self flipBack:lastImageView];
+                    [self flipBack:sself->lastImageView];
                     //                    currentImageView.image =  backImage;
                     //                    lastImageView.image = backImage;
                 }

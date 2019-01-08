@@ -87,6 +87,7 @@
 		520496F721D91F5B0090D29F /* dawei1-8.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 520496ED21D91F5B0090D29F /* dawei1-8.mp3 */; };
 		520496F821D91F5B0090D29F /* dawei1-5.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 520496EE21D91F5B0090D29F /* dawei1-5.mp3 */; };
 		520496F921D91F5B0090D29F /* dawei1-6.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 520496EF21D91F5B0090D29F /* dawei1-6.mp3 */; };
+		52A95CE421E5067900C99B67 /* BXFStudentNavigationController.m in Sources */ = {isa = PBXBuildFile; fileRef = 52A95CE321E5067900C99B67 /* BXFStudentNavigationController.m */; };
 		52ADDF2721CB578B00CEEB6C /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 52ADDF2621CB578B00CEEB6C /* AppDelegate.m */; };
 		52ADDF2A21CB578B00CEEB6C /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 52ADDF2921CB578B00CEEB6C /* ViewController.m */; };
 		52ADDF2D21CB578B00CEEB6C /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 52ADDF2B21CB578B00CEEB6C /* Main.storyboard */; };
@@ -291,6 +292,8 @@
 		520496ED21D91F5B0090D29F /* dawei1-8.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "dawei1-8.mp3"; sourceTree = "<group>"; };
 		520496EE21D91F5B0090D29F /* dawei1-5.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "dawei1-5.mp3"; sourceTree = "<group>"; };
 		520496EF21D91F5B0090D29F /* dawei1-6.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "dawei1-6.mp3"; sourceTree = "<group>"; };
+		52A95CE221E5067900C99B67 /* BXFStudentNavigationController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BXFStudentNavigationController.h; sourceTree = "<group>"; };
+		52A95CE321E5067900C99B67 /* BXFStudentNavigationController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BXFStudentNavigationController.m; sourceTree = "<group>"; };
 		52ADDF2221CB578B00CEEB6C /* boxfairystudent.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = boxfairystudent.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		52ADDF2521CB578B00CEEB6C /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		52ADDF2621CB578B00CEEB6C /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
@@ -645,6 +648,8 @@
 				52ADDF3D21CB580300CEEB6C /* StudentHomeViewController.xib */,
 				52DDD27E21CF8EB5001EF6AB /* UIViewController+HiddenNavBar.h */,
 				52DDD27F21CF8EB5001EF6AB /* UIViewController+HiddenNavBar.m */,
+				52A95CE221E5067900C99B67 /* BXFStudentNavigationController.h */,
+				52A95CE321E5067900C99B67 /* BXFStudentNavigationController.m */,
 			);
 			path = boxfairystudent;
 			sourceTree = "<group>";
@@ -1189,6 +1194,7 @@
 				52DDD28F21D0B5E3001EF6AB /* BFXStudentWorkRankingView.m in Sources */,
 				52DDD25621CF753A001EF6AB /* CartoonViewController.m in Sources */,
 				52DDD25B21CF7567001EF6AB /* CartoonCell.m in Sources */,
+				52A95CE421E5067900C99B67 /* BXFStudentNavigationController.m in Sources */,
 				52DDD26521CF7641001EF6AB /* DoReadingViewController.m in Sources */,
 				52ADDF4321CB584500CEEB6C /* HomeViewController.m in Sources */,
 				52DDD28621D0B211001EF6AB /* BXFStudentWorkTitleView.m in Sources */,

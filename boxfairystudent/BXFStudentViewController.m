@@ -9,7 +9,7 @@
 #import "BXFStudentViewController.h"
 
 
-@interface BXFStudentViewController () {
+@interface BXFStudentViewController () <UINavigationControllerDelegate>{
     
 }
 

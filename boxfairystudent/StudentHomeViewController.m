@@ -15,7 +15,7 @@
 #import "ExaminationViewController.h"
 #import "GameCenterViewController.h"
 
-@interface StudentHomeViewController ()
+@interface StudentHomeViewController ()<UINavigationControllerDelegate>
 
 @end
 
@@ -48,29 +48,7 @@
         [super viewWillAppear:animated];
     
         self.navigationController.delegate = self;
-    
-        if([[UIDevice currentDevice]respondsToSelector:@selector(setOrientation:)]) {
-        
-                SEL selector = NSSelectorFromString(@"setOrientation:");
-        
-                NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:[UIDevice instanceMethodSignatureForSelector:selector]];
-        
-               [invocation setSelector:selector];
-        
-                [invocation setTarget:[UIDevice currentDevice]];
-        
-                int val = UIInterfaceOrientationLandscapeRight;//横屏
-    
-                [invocation setArgument:&val atIndex:2];
-        
-                 [invocation invoke];
-    
-            }
 
-    }
-
-- (IBAction)goBack:(id)sender {
-    [self.navigationController popViewControllerAnimated:YES];
 }
 
 - (void)selectHeaderImage:(UITapGestureRecognizer *)sender {
@@ -132,7 +110,7 @@
             vc = [[OnlineClassViewController alloc] initWithNibName:@"OnlineClassViewController" bundle:nil];
             break;
         case 7:
-            [self.navigationController popViewControllerAnimated:YES];
+            [self.navigationController.presentingViewController dismissViewControllerAnimated:YES completion:nil];
             break;
         default:
             break;
