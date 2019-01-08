@@ -8,14 +8,14 @@
 
 #import "BXFStudentViewController.h"
 #import "BXFStudentWorkTitleView.h"
-#import "BXFStudentWorkMainView.h"
+#import "BXFStudentWorkPeiYinView.h"
 #import "BXFStudentWorkRecordView.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface BXFStudentPeiYinViewController : BXFStudentViewController {
     BXFStudentWorkTitleView *titleView;
-    BXFStudentWorkMainView *mainView;
+    BXFStudentWorkPeiYinView *mainView;
     BXFStudentWorkRecordView *recView;
 }
 

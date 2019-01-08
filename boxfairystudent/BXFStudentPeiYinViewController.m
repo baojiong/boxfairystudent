@@ -29,18 +29,15 @@ static const int kTitleBarHeight = 48;
     [titleView addSubview:backButton];
     [self.view addSubview:titleView];
     
-    recView = [[BXFStudentWorkRecordView alloc] initWithFrame:CGRectMake(kTitleBarWidth + 2, 0, self.view.bounds.size.width - kTitleBarWidth - 2, self.view.frame.size.height)];
-    recView.backgroundColor= [UIColor greenColor];
+    recView = [[BXFStudentWorkRecordView alloc] initWithFrame:CGRectMake(kTitleBarWidth + 2, 0, self.view.bounds.size.width - kTitleBarWidth - 2, self.view.frame.size.height) andContentText:@[@"I am fine", @"good morning"]];
     [self.view addSubview:recView];
     
-    mainView = [[BXFStudentWorkMainView alloc] initWithFrame:CGRectMake(0, kTitleBarHeight + 2, kTitleBarWidth, self.view.frame.size.height - kTitleBarHeight - 2)];
-    mainView.pageImages = @[[UIImage imageNamed:@"K1-19A-248"], [UIImage imageNamed:@"K1-1A-2"]];
-    mainView.contentText= @[@"a cat says meow", @"hi, elmo"];
+    mainView = [[BXFStudentWorkPeiYinView alloc] initWithFrame:CGRectMake(0, kTitleBarHeight + 2, kTitleBarWidth, self.view.frame.size.height - kTitleBarHeight - 2) andVideoURL:[NSURL URLWithString:@"http://clips.vorwaerts-gmbh.de/big_buck_bunny.mp4"] andSchedule:@[@[@2, @4], @[@14, @16]]];
     mainView.backgroundColor = [UIColor greenColor];
     mainView.recordView = recView;
     mainView.titleView = titleView;
     [self.view addSubview:mainView];
-    [mainView turnToFirstPage];
+    [mainView turnToFirstStage];
 }
 
 /*

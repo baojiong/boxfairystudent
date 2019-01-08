@@ -30,33 +30,73 @@ static NSMutableDictionary *musices;
 @implementation BXFStudentWorkRecordView
 
 /*
-// Only override drawRect: if you perform custom drawing.
-// An empty implementation adversely affects performance during animation.
-- (void)drawRect:(CGRect)rect {
-    // Drawing code
-}
-*/
-
-- (instancetype)initWithFrame:(CGRect)frame {
+ // Only override drawRect: if you perform custom drawing.
+ // An empty implementation adversely affects performance during animation.
+ - (void)drawRect:(CGRect)rect {
+ // Drawing code
+ }
+ */
+- (instancetype)initWithFrame:(CGRect)frame andContentText:(NSArray *)sentences{
     if(self = [super initWithFrame:frame]) {
-        [self initData];
-        [self initUI];
-        
-        [self initIflySpeechEvaluator];
+        sentenceText = [NSArray arrayWithArray:sentences];
+        _recordedSoundURLs = [[NSMutableArray alloc] initWithCapacity: sentenceText.count];
+        scores = [[NSMutableArray alloc] initWithCapacity: sentenceText.count];
+        for (int i = 0; i < sentenceText.count; i++) {
+            [_recordedSoundURLs addObject:[NSURL URLWithString:@""]];
+            [scores addObject:@"0.00"];
+            
+            
+            [self initUI];
+            [self initIflySpeechEvaluator];
+        }
     }
     return self;
 }
 
-- (void)initData {
-    _sentenceText = @"";//@[@"a cat says meow", @"Hi, Elmo"];
-    cafPathStr = [kSandboxPathStr stringByAppendingPathComponent:kCafFileName];
+/*
+ 获得完成的句子个数：以有得分为完成。
+ */
+- (int)compeleteCount {
+    int result = 0;
+    for(int i = 0; i < scores.count; i++) {
+        if([scores[i] floatValue] > 0.00f) {
+            result++;
+        }
+    }
+    return result;
+}
+
+/*
+ 判断是否完成所有的录音完成：完成的句子个数 == 全部句子个数
+ */
+- (BOOL)isCompelete {
+    if ([self compeleteCount] == sentenceText.count) {
+        return YES;
+    } else {
+        return NO;
+    }
+}
+
+/*
+ 全部句子的总分 / 句子个数
+ */
+- (CGFloat)average {
+    float result = 0.0f;
+    for(int i = 0; i < scores.count; i++) {
+        result += [scores[i] floatValue];
+    }
+    return result / scores.count;
+}
+
+- (CGFloat)currentScore {
+    return [scores[self.currentIndex] floatValue];
 }
 
 - (void)initUI {
     self.autoresizesSubviews = YES;
     
     sentenceLabel = [[UILabel alloc] initWithFrame:CGRectMake(kSentenceLabelMargin, kSentenceLabelMargin, self.bounds.size.width - kSentenceLabelMargin * 2, kSentenceLabelHeight)];
-    sentenceLabel.text = _sentenceText;
+    //sentenceLabel.text = sentenceText[self.currentIndex];
     sentenceLabel.textAlignment = NSTextAlignmentCenter;
     sentenceLabel.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleBottomMargin | UIViewAutoresizingFlexibleLeftMargin;
     [self addSubview:sentenceLabel];
@@ -67,11 +107,11 @@ static NSMutableDictionary *musices;
     [self addSubview:scoreLabel];
     
     UILongPressGestureRecognizer *longPressRec = [[UILongPressGestureRecognizer alloc]initWithTarget:self action:@selector(longPress:)];
-    UITapGestureRecognizer *tapRec = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(stopRecording:)];
+    UITapGestureRecognizer *tapRec = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(onStopRecordButtonClick:)];
     UIImageView *recImageButton = [[UIImageView alloc] initWithFrame:CGRectMake(self.bounds.size.width / 2 - kRecordButtonDiameter / 2, self.bounds.size.height - kRecordButtonBottomMargin - kRecordButtonDiameter, kRecordButtonDiameter, kRecordButtonDiameter)];
     recImageButton.image = [UIImage imageNamed:@"录音"];
-//    [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"录音"]];
-  //  recImageButton.frame = CGRectMake(self.center.x - kRecordButtonDiameter / 2, self.bounds.size.height - kRecordButtonBottomMargin, kRecordButtonDiameter, kRecordButtonDiameter);
+    //    [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"录音"]];
+    //  recImageButton.frame = CGRectMake(self.center.x - kRecordButtonDiameter / 2, self.bounds.size.height - kRecordButtonBottomMargin, kRecordButtonDiameter, kRecordButtonDiameter);
     recImageButton.userInteractionEnabled = YES;
     [recImageButton addGestureRecognizer:longPressRec];
     [recImageButton addGestureRecognizer:tapRec];
@@ -85,57 +125,52 @@ static NSMutableDictionary *musices;
     [playImageButton addGestureRecognizer:tapPlay];
     [self addSubview:playImageButton];
     
-//    UIButton *recordButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
-//    recordButton.frame = CGRectMake(self.bounds.size.width / 2 - kRecordButtonDiameter / 2, 30, kRecordButtonDiameter, kRecordButtonDiameter);
-//    //recordButton.frame = CGRectMake(self.center.x - kRecordButtonDiameter / 2, self.bounds.size.height - kRecordButtonMargin - kRecordButtonDiameter / 2, kRecordButtonDiameter, kRecordButtonDiameter);
-//    //recordButton.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleLeftMargin;
-//    [recordButton setTitle:@"Record" forState:UIControlStateNormal];
-//    [recordButton addTarget:nil action:@selector(startRecording:) forControlEvents:UIControlEventTouchDown];
-//    [recordButton addTarget:nil action:@selector(stopRecording:) forControlEvents:UIControlEventTouchUpInside];
-//    [self addSubview:recordButton];
-//
-//    UIButton *playButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
-//    playButton.frame = CGRectMake(self.bounds.size.width / 2 - kRecordButtonDiameter / 2, 100, kRecordButtonDiameter, kRecordButtonDiameter);
-//    //recordButton.frame = CGRectMake(self.center.x - kRecordButtonDiameter / 2, self.bounds.size.height - kRecordButtonMargin - kRecordButtonDiameter / 2, kRecordButtonDiameter, kRecordButtonDiameter);
-//    //recordButton.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleLeftMargin;
-//    [playButton setTitle:@"Play" forState:UIControlStateNormal];
-//    [playButton addTarget:nil action:@selector(play:) forControlEvents:UIControlEventTouchUpInside];
-//    [self addSubview:playButton];
-}
-
-- (void)selectHeaderImage:(UITapGestureRecognizer *)sender {
-    UITapGestureRecognizer *tap = (UITapGestureRecognizer *)sender;
-    UIViewController *vc;
-    switch (tap.view.tag) {
-        case 1: {
-        }
-    }
+    //    UIButton *recordButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+    //    recordButton.frame = CGRectMake(self.bounds.size.width / 2 - kRecordButtonDiameter / 2, 30, kRecordButtonDiameter, kRecordButtonDiameter);
+    //    //recordButton.frame = CGRectMake(self.center.x - kRecordButtonDiameter / 2, self.bounds.size.height - kRecordButtonMargin - kRecordButtonDiameter / 2, kRecordButtonDiameter, kRecordButtonDiameter);
+    //    //recordButton.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleLeftMargin;
+    //    [recordButton setTitle:@"Record" forState:UIControlStateNormal];
+    //    [recordButton addTarget:nil action:@selector(onRecordButtonClick:) forControlEvents:UIControlEventTouchDown];
+    //    [recordButton addTarget:nil action:@selector(onStopRecordButtonClick:) forControlEvents:UIControlEventTouchUpInside];
+    //    [self addSubview:recordButton];
+    //
+    //    UIButton *playButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+    //    playButton.frame = CGRectMake(self.bounds.size.width / 2 - kRecordButtonDiameter / 2, 100, kRecordButtonDiameter, kRecordButtonDiameter);
+    //    //recordButton.frame = CGRectMake(self.center.x - kRecordButtonDiameter / 2, self.bounds.size.height - kRecordButtonMargin - kRecordButtonDiameter / 2, kRecordButtonDiameter, kRecordButtonDiameter);
+    //    //recordButton.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleLeftMargin;
+    //    [playButton setTitle:@"Play" forState:UIControlStateNormal];
+    //    [playButton addTarget:nil action:@selector(play:) forControlEvents:UIControlEventTouchUpInside];
+    //    [self addSubview:playButton];
 }
 
 - (void)longPress:(UIGestureRecognizer *)gestrue {
     //直接return掉，不在开始的状态里面添加任何操作，则长按手势就会被少调用一次了
     if (gestrue.state == UIGestureRecognizerStateBegan) {
-        [self startRecording:nil];
+        [self onRecordButtonClick:nil];
+        scoreLabel.text = @"正在录音...";
     } else if (gestrue.state == UIGestureRecognizerStateEnded) {
-        [self stopRecording:nil];
+        [self onStopRecordButtonClick:nil];
+        scoreLabel.text = @"结束录音...";
     }
 }
 
-- (void)startRecording:(UIButton *)sender {
+- (void)onRecordButtonClick:(UIButton *)sender {
     NSLog(@"press record button");
-    cafPathStr = [kSandboxPathStr stringByAppendingPathComponent:kCafFileName];
-    [self createAudioRecorder];
+    NSString *timeSp = [NSString stringWithFormat:@"%ld", (long)[[NSDate date] timeIntervalSince1970]];
+    cafPathStr = [kSandboxPathStr stringByAppendingPathComponent:[NSString stringWithFormat:@"BXF%@.caf", timeSp]];
+    
+    audioRecorder = [self createAudioRecorder];
     [self startRecordNotice];
 }
 
-- (void)stopRecording:(UIButton *)sender {
+- (void)onStopRecordButtonClick:(UIButton *)sender {
     NSLog(@"release record button");
     [self stopRecordNotice];
 }
 
 - (void)play:(UIButton *)sender {
     NSLog(@"play button pressed");
-    [self createAudioPlayer];
+    audioPlayer = [self createAudioPlayer];
     [self startPlayNotice];
 }
 
@@ -207,8 +242,8 @@ static NSMutableDictionary *musices;
     [timer1 invalidate];
     
     //    计算文件大小
-    long long fileSize = [self fileSizeAtPath:cafPathStr]/1024.0;
-    NSString *fileSizeStr = [NSString stringWithFormat:@"%lld",fileSize];
+    //long long fileSize = [self fileSizeAtPath:cafPathStr]/1024.0;
+    //NSString *fileSizeStr = [NSString stringWithFormat:@"%lld",fileSize];
     
     //self.timeLabel2.text = [NSString stringWithFormat:@"%ld \" %@kb  ", (long)self.countNum,fileSizeStr];
     //self.timeLabel.text = @"00:00";
@@ -242,24 +277,27 @@ static NSMutableDictionary *musices;
  *  @return 录音机对象
  */
 - (AVAudioRecorder *)createAudioRecorder{
-
-    if (!audioRecorder) {
-        //创建录音文件保存路径
-        NSURL *url=[NSURL URLWithString:cafPathStr];
-        //创建录音格式设置
-        NSDictionary *setting=[self getAudioSetting];
-        //创建录音机
-        NSError *error=nil;
-        
-        audioRecorder = [[AVAudioRecorder alloc]initWithURL:url settings:setting error:&error];
-        audioRecorder.delegate = self;
-        audioRecorder.meteringEnabled = YES;//如果要监控声波则必须设置为YES
-        if (error) {
-            NSLog(@"创建录音机对象时发生错误，错误信息：%@",error.localizedDescription);
-            return nil;
-        }
+    
+    //if (!audioRecorder) {
+    //创建录音文件保存路径
+    NSString *timeSp = [NSString stringWithFormat:@"%ld", (long)[[NSDate date] timeIntervalSince1970]];
+    cafPathStr = [kSandboxPathStr stringByAppendingPathComponent:[NSString stringWithFormat:@"BXF%@.caf", timeSp]];
+    NSURL *url=[NSURL URLWithString:cafPathStr];
+    
+    //创建录音格式设置
+    NSDictionary *setting=[self getAudioSetting];
+    //创建录音机
+    NSError *error=nil;
+    
+    AVAudioRecorder *ar = [[AVAudioRecorder alloc]initWithURL:url settings:setting error:&error];
+    ar.delegate = self;
+    ar.meteringEnabled = YES;//如果要监控声波则必须设置为YES
+    if (error) {
+        NSLog(@"创建录音机对象时发生错误，错误信息：%@",error.localizedDescription);
+        return nil;
     }
-    return audioRecorder;
+    //}
+    return ar;
 }
 
 /**
@@ -322,17 +360,17 @@ static NSMutableDictionary *musices;
 }
 
 - (AVAudioPlayer *)createAudioPlayer {
-        
-        NSError *error = nil;
-        
-        audioPlayer = [[AVAudioPlayer alloc]initWithContentsOfURL:[NSURL fileURLWithPath:cafPathStr] error:&error];
-        //设置代理
-        audioPlayer.delegate = self;
-        
-        //将播放文件加载到缓冲区
-        [audioPlayer prepareToPlay];
     
-    return audioPlayer;
+    NSError *error = nil;
+    
+    AVAudioPlayer * ap = [[AVAudioPlayer alloc]initWithContentsOfURL:self.recordedSoundURLs[self.currentIndex] error:&error];
+    //设置代理
+    ap.delegate = self;
+    
+    //将播放文件加载到缓冲区
+    [ap prepareToPlay];
+    
+    return ap;
 }
 
 - (void)startPlayNotice {
@@ -361,6 +399,7 @@ static NSMutableDictionary *musices;
 #pragma mark -  AVAudioRecorder  Delegate
 - (void)audioRecorderDidFinishRecording:(AVAudioRecorder *)recorder successfully:(BOOL)flag {
     NSLog(@"录音完成");
+    scoreLabel.text = @"正在打分...";
     [self startEvaluate];
 }//录音完成
 
@@ -385,9 +424,9 @@ static NSMutableDictionary *musices;
     [speechEvaluator setParameter:self.iseParams.timeout forKey:[IFlySpeechConstant SPEECH_TIMEOUT]];
     [speechEvaluator setParameter:self.iseParams.audioSource forKey:[IFlySpeechConstant AUDIO_SOURCE]];
     
-//    [speechEvaluator setParameter:@"16000" forKey:[IFlySpeechConstant SAMPLE_RATE]];
-//    [speechEvaluator setParameter:@"utf-8" forKey:[IFlySpeechConstant TEXT_ENCODING]];
-//    [speechEvaluator setParameter:@"xml" forKey:[IFlySpeechConstant ISE_RESULT_TYPE]];
+    //    [speechEvaluator setParameter:@"16000" forKey:[IFlySpeechConstant SAMPLE_RATE]];
+    //    [speechEvaluator setParameter:@"utf-8" forKey:[IFlySpeechConstant TEXT_ENCODING]];
+    //    [speechEvaluator setParameter:@"xml" forKey:[IFlySpeechConstant ISE_RESULT_TYPE]];
 }
 
 - (void)startEvaluate {
@@ -396,7 +435,7 @@ static NSMutableDictionary *musices;
     [speechEvaluator setParameter:@"-1" forKey:@"audio_source"];
     NSStringEncoding encoding = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingGB_18030_2000);
     
-    NSMutableData *buffer = [NSMutableData dataWithData:[self.sentenceText dataUsingEncoding:encoding]];
+    NSMutableData *buffer = [NSMutableData dataWithData:[sentenceText[self.currentIndex] dataUsingEncoding:encoding]];
     NSLog(@" \nen buffer length: %lu",(unsigned long)[buffer length]);
     
     //启动评测服务
@@ -490,14 +529,14 @@ static NSMutableDictionary *musices;
             showText = [showText stringByAppendingString:strResults];
         }
         
-//        self.resultText=showText;
-//        self.resultView.text = showText;
-//        self.isSessionResultAppear=YES;
-//        self.isSessionEnd=YES;
+        //        self.resultText=showText;
+        //        self.resultView.text = showText;
+        //        self.isSessionResultAppear=YES;
+        //        self.isSessionEnd=YES;
         if(isLast){
-//            [self.popupView setText: NSLocalizedString(@"T_ISE_End", nil)];
-//            [self.view addSubview:self.popupView];
-            NSLog(showText);
+            //            [self.popupView setText: NSLocalizedString(@"T_ISE_End", nil)];
+            //            [self.view addSubview:self.popupView];
+            //NSLog(showText);
             
             ISEResultXmlParser* parser=[[ISEResultXmlParser alloc] init];
             parser.delegate = self;
@@ -505,14 +544,14 @@ static NSMutableDictionary *musices;
         }
         
     }
-//    else{
-//        if(isLast){
-//            [self.popupView setText: NSLocalizedString(@"M_ISE_Msg", nil)];
-//            [self.view addSubview:self.popupView];
-//        }
-//        self.isSessionEnd=YES;
-//    }
-//    self.startBtn.enabled=YES;
+    //    else{
+    //        if(isLast){
+    //            [self.popupView setText: NSLocalizedString(@"M_ISE_Msg", nil)];
+    //            [self.view addSubview:self.popupView];
+    //        }
+    //        self.isSessionEnd=YES;
+    //    }
+    //    self.startBtn.enabled=YES;
 }
 
 #pragma mark - ISEResultXmlParserDelegate
@@ -532,37 +571,31 @@ static NSMutableDictionary *musices;
  */
 -(void)onISEResultXmlParserResult:(ISEResult*)result{
     //self.resultView.text=[result toString];
+    CGFloat score;
     if(result.is_rejected) {
-        scoreLabel.text = @"0.0";
-        NSLog(@"0.0");
+        score = 0.00;
     } else if ([result.except_info isEqualToString:@"28673"] || //28673（音量小/无语音）
                [result.except_info isEqualToString:@"28680"] || //28680（信噪比低）
                [result.except_info isEqualToString:@"28690"]){  //28690（有截幅）
-        NSLog(@"0.0");
-        scoreLabel.text = @"0.0";
+        score = 0.00;
     } else {
         NSLog(@"%0.2f", result.total_score * 10 * 2);
-        scoreLabel.text = [NSString stringWithFormat:@"%0.2f", result.total_score * 10 * 2];
+        score = result.total_score * 10 * 2;
     }
+    
+    // 如果分数高于原来的分数则替换。
+    if (score > [scores[self.currentIndex] floatValue]) {
+        [_recordedSoundURLs replaceObjectAtIndex:self.currentIndex withObject:[NSURL fileURLWithPath:cafPathStr]];
+        [scores replaceObjectAtIndex:self.currentIndex withObject:[NSString stringWithFormat:@"%0.2f", score]];
+    }
+    
+    scoreLabel.text =  scores[self.currentIndex];
 }
 
-- (void)setSentenceText:(NSString *)sentenceText {
-    _sentenceText = sentenceText;
-    sentenceLabel.text = sentenceText;
-}
-
-//- (void)setCurrentIndex:(int)currentIndex {
-//    _currentIndex = currentIndex;
-//}
-
-- (NSString *)uuidString
-{
-    CFUUIDRef uuid_ref = CFUUIDCreate(NULL);
-    CFStringRef uuid_string_ref= CFUUIDCreateString(NULL, uuid_ref);
-    NSString *uuid = [NSString stringWithString:(__bridge NSString *)uuid_string_ref];
-    CFRelease(uuid_ref);
-    CFRelease(uuid_string_ref);
-    return [uuid lowercaseString];
+- (void)setCurrentIndex:(int)currentIndex {
+    _currentIndex = currentIndex;
+    sentenceLabel.text = sentenceText[self.currentIndex];
+    scoreLabel.text = scores[self.currentIndex];
 }
 
 @end
@@ -603,5 +636,6 @@ static NSMutableDictionary *musices;
  中    2.5分~3.4分    50分~69分
  差    1.5分~2.4分    30分~49分
  很差    0分~1.4分    0分~29分
-
+ 
  */
+

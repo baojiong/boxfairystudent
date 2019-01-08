@@ -31,11 +31,24 @@ NS_ASSUME_NONNULL_BEGIN
     UILabel *scoreLabel;
     
     NSMutableArray *recordings;
+    
+    NSArray *sentenceText;
+    
+    NSMutableArray *scores;
 }
 
 @property(nonatomic, copy) NSString *sentenceText;
 @property (nonatomic, strong) ISEParams *iseParams;
-//@property(nonatomic, assign) int currentIndex;
+@property(nonatomic, assign) int currentIndex;
+@property(nonatomic, copy) NSMutableArray *recordedSoundURLs;
+
+
+- (instancetype)initWithFrame:(CGRect)frame andContentText:(NSArray *)sentences;
+
+- (int)compeleteCount;
+- (BOOL)isCompelete;
+- (CGFloat)average;
+- (CGFloat)currentScore;
 
 @end
 

@@ -31,12 +31,6 @@ static const int kTitleBarHeight = 48;
     [titleView addSubview:backButton];
     [self.view addSubview:titleView];
     
-    recView = [[BXFStudentWorkRecordView alloc] initWithFrame:CGRectMake(kTitleBarWidth + 2, 0, self.view.bounds.size.width - kTitleBarWidth - 2, self.view.frame.size.height)];
-    recView.backgroundColor= [UIColor whiteColor];
-    [self.view addSubview:recView];
-    
-    mainView = [[BXFStudentWorkMainView alloc] initWithFrame:CGRectMake(0, kTitleBarHeight + 2, kTitleBarWidth, self.view.frame.size.height - kTitleBarHeight - 2)];
-    
     NSMutableArray *pageImages = [[NSMutableArray alloc] initWithCapacity:[self.pageInfo[@"count"] intValue]];
     NSMutableArray *pageSounds = [[NSMutableArray alloc] initWithCapacity:[self.pageInfo[@"count"] intValue]];
     
@@ -49,9 +43,15 @@ static const int kTitleBarHeight = 48;
         NSURL *url=[[NSBundle mainBundle]URLForResource:soundName withExtension:nil];
         [pageSounds addObject:url];
     }
-    mainView.pageImages  = [NSArray arrayWithArray:pageImages];
-    mainView.contentText =  self.pageInfo[@"text"];
-    mainView.originSound = [NSArray arrayWithArray:pageSounds];
+    
+    recView = [[BXFStudentWorkRecordView alloc] initWithFrame:CGRectMake(kTitleBarWidth + 2, 0, self.view.bounds.size.width - kTitleBarWidth - 2, self.view.frame.size.height) andContentText:self.pageInfo[@"text"]] ;
+    recView.backgroundColor= [UIColor whiteColor];
+    [self.view addSubview:recView];
+    
+    mainView = [[BXFStudentWorkMainView alloc] initWithFrame:CGRectMake(0, kTitleBarHeight + 2, kTitleBarWidth, self.view.frame.size.height - kTitleBarHeight - 2) andImages:[NSArray arrayWithArray:pageImages] andOriginSoundURLs:[NSArray arrayWithArray:pageSounds]];
+//    mainView.pageImages  = [NSArray arrayWithArray:pageImages];
+//    mainView.contentText =  self.pageInfo[@"text"];
+  //  mainView.originSound = [NSArray arrayWithArray:pageSounds];
  //   mainView.pageImages = @[[UIImage imageNamed:@"K1-19A-248"], [UIImage imageNamed:@"K1-1A-2"]];
 //    mainView.contentText= @[@"a cat says meow", @"hi, elmo"];
     

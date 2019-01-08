@@ -19,14 +19,13 @@ static const int kPageButtonWidth = 100;
 @implementation BXFStudentWorkMainView
 
 /*
-// Only override drawRect: if you perform custom drawing.
-// An empty implementation adversely affects performance during animation.
-- (void)drawRect:(CGRect)rect {
-    // Drawing code
-}
-*/
-
-- (instancetype)initWithFrame:(CGRect)frame {
+ // Only override drawRect: if you perform custom drawing.
+ // An empty implementation adversely affects performance during animation.
+ - (void)drawRect:(CGRect)rect {
+ // Drawing code
+ }
+ */
+- (instancetype)initWithFrame:(CGRect)frame andImages:(NSArray *)pageImagesArr andOriginSoundURLs:(NSArray *)originSoundURLsArr {
     if(self = [super initWithFrame:frame]) {
         [self initData];
         self.autoresizesSubviews = YES;
@@ -34,8 +33,11 @@ static const int kPageButtonWidth = 100;
         float imageWidth = self.bounds.size.width - kImageMargin * 2;
         float imageHeight = 750 * ( imageWidth / 1334);
         
+        pageImages = [NSArray arrayWithArray:pageImagesArr];
+        originSoundURLs = [NSArray arrayWithArray:originSoundURLsArr];
+        
         currentPageView = [[UIImageView alloc] initWithFrame:CGRectMake(self.bounds.size.width - imageWidth - kImageMargin, kImageMargin, imageWidth, imageHeight)];
-        currentPageView.image = _pageImages[_currentPageIndex];
+        currentPageView.image = pageImages[_currentPageIndex];
         currentPageView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleBottomMargin;
         [self addSubview:currentPageView];
         
@@ -57,23 +59,29 @@ static const int kPageButtonWidth = 100;
         [playButton setTitle:@"play" forState:UIControlStateNormal];
         playButton.frame = CGRectMake(self.bounds.size.width /2  - kPageButtonWidth, self.bounds.size.height - kPageButtonHeight - kPageButtonBottomMargin, kPageButtonWidth, kPageButtonHeight);
         playButton.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleLeftMargin;
-        [playButton addTarget:nil action:@selector(playOriginSound) forControlEvents:UIControlEventTouchUpInside];
+        [playButton addTarget:nil action:@selector(playCurrentOriginSound) forControlEvents:UIControlEventTouchUpInside];
         [self addSubview:playButton];
         
         UIButton *playAllButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
         [playAllButton setTitle:@"play all" forState:UIControlStateNormal];
-        playAllButton.frame = CGRectMake(self.bounds.size.width /2, self.bounds.size.height - kPageButtonHeight - kPageButtonBottomMargin, kPageButtonWidth, kPageButtonHeight);
+        playAllButton.frame = CGRectMake(self.bounds.size.width /2 - kPageButtonWidth / 2, self.bounds.size.height - kPageButtonHeight - kPageButtonBottomMargin, kPageButtonWidth, kPageButtonHeight);
         playAllButton.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleLeftMargin;
         [playAllButton addTarget:nil action:@selector(playAllOriginSound) forControlEvents:UIControlEventTouchUpInside];
         [self addSubview:playAllButton];
         
+        UIButton *previewButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+        [previewButton setTitle:@"preview" forState:UIControlStateNormal];
+        previewButton.frame = CGRectMake(self.bounds.size.width /2 + kPageButtonWidth / 2, self.bounds.size.height - kPageButtonHeight - kPageButtonBottomMargin, kPageButtonWidth, kPageButtonHeight);
+        previewButton.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleLeftMargin;
+        [previewButton addTarget:nil action:@selector(preview) forControlEvents:UIControlEventTouchUpInside];
+        [self addSubview:previewButton];
     }
     return self;
 }
 
 - (void)initData {
-//    _pageImages = @[[UIImage imageNamed:@"K1-19A-248"], [UIImage imageNamed:@"K1-1A-2"]];
-//    _contentText= @[@"a cat says meow", @"hi, elmo"];
+    //    _pageImages = @[[UIImage imageNamed:@"K1-19A-248"], [UIImage imageNamed:@"K1-1A-2"]];
+    //    _contentText= @[@"a cat says meow", @"hi, elmo"];
     _currentPageIndex = 0;
 }
 
@@ -83,79 +91,104 @@ static const int kPageButtonWidth = 100;
         _currentPageIndex = 0;
         NSLog(@"已经第一页了");
     } else {
-        currentPageView.image = _pageImages[_currentPageIndex];
-        self.recordView.sentenceText = _contentText[_currentPageIndex];
-        self.titleView.titleLabel.text = [NSString stringWithFormat:@"已完成 %d/%d", _currentPageIndex, _pageImages.count];
+        currentPageView.image = pageImages[_currentPageIndex];
+        self.recordView.currentIndex = self.currentPageIndex;
+        self.titleView.titleLabel.text = [NSString stringWithFormat:@"已完成 %d/%d 平均分：%0.2f", [self.recordView compeleteCount], (int)pageImages.count, [self.recordView average]];
     }
 }
 
 - (BOOL)nextPage:(UIButton *)sender {
     _currentPageIndex++;
-    if(_currentPageIndex >= _pageImages.count) {
-        _currentPageIndex = (int)_pageImages.count - 1;
+    if(_currentPageIndex >= pageImages.count) {
+        _currentPageIndex = (int)pageImages.count - 1;
         NSLog(@"已经最后页了");
         return false;
     } else {
-        currentPageView.image = _pageImages[_currentPageIndex];
-        self.recordView.sentenceText = _contentText[_currentPageIndex];
-        self.titleView.titleLabel.text = [NSString stringWithFormat:@"已完成 %d/%d", _currentPageIndex, _pageImages.count];
+        currentPageView.image = pageImages[_currentPageIndex];
+        self.recordView.currentIndex = self.currentPageIndex;
+        self.titleView.titleLabel.text = [NSString stringWithFormat:@"已完成 %d/%d 平均分：%0.2f", [self.recordView compeleteCount], (int)pageImages.count, [self.recordView average]];
         return true;
     }
 }
 
-- (void)playOriginSound {
-        
-        NSError *error = nil;
-        audioPlayer = [[AVAudioPlayer alloc]initWithContentsOfURL:self.originSound[self.currentPageIndex] error:&error];
-        //设置代理
-        audioPlayer.delegate = self;
-        
-        //将播放文件加载到缓冲区
-        [audioPlayer prepareToPlay];
-        
 
-        AVAudioSession *session = [AVAudioSession sharedInstance];
-        
-        NSError *sessionError;
-        
-        [session setCategory:AVAudioSessionCategoryPlayAndRecord error:&sessionError];
-        
-        UInt32 audioRouteOverride = kAudioSessionOverrideAudioRoute_Speaker;
-        AudioSessionSetProperty (
-                                 kAudioSessionProperty_OverrideAudioRoute,
-                                 sizeof (audioRouteOverride),
-                                 &audioRouteOverride
-                                 );
-        if(session == nil)
-            NSLog(@"Error creating session: %@", [sessionError description]);
-        else
-            [session setActive:YES error:nil];
-        
-        if (!audioPlayer.isPlaying) {
-            [audioPlayer play];
-        }
+- (void)playSoundOfURL:(NSURL *)soundURL{
+    
+    NSError *error = nil;
+    audioPlayer = [[AVAudioPlayer alloc]initWithContentsOfURL:soundURL error:&error];
+    //设置代理
+    audioPlayer.delegate = self;
+    
+    //将播放文件加载到缓冲区
+    [audioPlayer prepareToPlay];
+    
+    
+    AVAudioSession *session = [AVAudioSession sharedInstance];
+    
+    NSError *sessionError;
+    
+    [session setCategory:AVAudioSessionCategoryPlayAndRecord error:&sessionError];
+    
+    UInt32 audioRouteOverride = kAudioSessionOverrideAudioRoute_Speaker;
+    AudioSessionSetProperty (
+                             kAudioSessionProperty_OverrideAudioRoute,
+                             sizeof (audioRouteOverride),
+                             &audioRouteOverride
+                             );
+    if(session == nil)
+        NSLog(@"Error creating session: %@", [sessionError description]);
+    else
+        [session setActive:YES error:nil];
+    
+    if (!audioPlayer.isPlaying) {
+        [audioPlayer play];
+    }
+}
+
+- (void)playCurrentOriginSound {
+    isPlayAll = NO;
+    [self playSoundOfURL:originSoundURLs[self.currentPageIndex]];
 }
 
 - (void)playAllOriginSound {
+    isPlayAll = YES;
+    isPreview = NO;
     [self turnToFirstPage];
-    [self playOriginSound];
-    
+    [self playSoundOfURL:originSoundURLs[self.currentPageIndex]];
+}
+
+- (void)preview {
+    isPlayAll = YES;
+    isPreview = YES;
+    [self turnToFirstPage];
+    [self playSoundOfURL:self.recordView.recordedSoundURLs[self.currentPageIndex]];
 }
 
 - (void)turnToFirstPage {
-    _currentPageIndex = 0;
-    currentPageView.image = self.pageImages[_currentPageIndex];
-    self.recordView.sentenceText = self.contentText[_currentPageIndex];
+    self.recordView.currentIndex = _currentPageIndex = 0;
+    currentPageView.image = pageImages[self.currentPageIndex];
+    self.titleView.titleLabel.text = [NSString stringWithFormat:@"已完成 %d/%d 平均分：%0.2f", [self.recordView compeleteCount], (int)pageImages.count, [self.recordView average]];
 }
 
 - (void)audioPlayerDidFinishPlaying:(AVAudioPlayer *)player successfully:(BOOL)flag {
-       if([self nextPage:nil]) {
-           [self playOriginSound];
-       } else {
-           [self turnToFirstPage];
-           UIAlertView *av = [[UIAlertView alloc] initWithTitle:@"播放完毕" message:nil delegate:nil cancelButtonTitle:@"好的" otherButtonTitles:nil, nil];
-           [av show];
-       }
+    if (isPlayAll) {
+        if([self nextPage:nil]) {
+            if (!isPreview) {
+                [self playSoundOfURL:originSoundURLs[self.currentPageIndex]];
+            } else {
+                if ([self.recordView currentScore] > 0.00f) {
+                    [self playSoundOfURL:self.recordView.recordedSoundURLs[self.currentPageIndex]];
+                } else {
+                    [self playSoundOfURL:originSoundURLs[self.currentPageIndex]];
+                }
+            }
+        } else {
+            [self turnToFirstPage];
+            //           UIAlertView *av = [[UIAlertView alloc] initWithTitle:@"播放完毕" message:nil delegate:nil cancelButtonTitle:@"好的" otherButtonTitles:nil, nil];
+            //           [av show];
+        }
+    }
 }
 
 @end
+

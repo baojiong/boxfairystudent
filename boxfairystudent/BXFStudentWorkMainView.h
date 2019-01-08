@@ -13,21 +13,25 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface BXFStudentWorkMainView : UIView<AVAudioPlayerDelegate>{
-    int currentPageIndex;
     UIImageView *currentPageView;
-    
     AVAudioPlayer *audioPlayer;
+    BOOL isPlayAll;
+    BOOL isPreview;
+    
+    NSArray *pageImages;
+    NSArray *originSoundURLs;
 }
 
-@property(nonatomic, copy) NSArray *pageImages;
-@property(nonatomic, copy) NSArray *contentText;
-@property(nonatomic, copy) NSArray *originSound;
+
 @property(nonatomic, assign, readonly) int currentPageIndex;
 
 @property(nonatomic, strong) BXFStudentWorkRecordView* recordView;
 @property(nonatomic, strong) BXFStudentWorkTitleView* titleView;
 
+- (instancetype)initWithFrame:(CGRect)frame andImages:(NSArray *)pageImagesArr andOriginSoundURLs:(NSArray *)originSoundURLsArr;
 - (void)turnToFirstPage;
+
+- (void)preview;    //听合成视频。
 
 @end
 
