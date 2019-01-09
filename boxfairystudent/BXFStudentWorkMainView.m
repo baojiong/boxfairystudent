@@ -161,7 +161,12 @@ static const int kPageButtonWidth = 100;
     isPlayAll = YES;
     isPreview = YES;
     [self turnToFirstPage];
-    [self playSoundOfURL:self.recordView.recordedSoundURLs[self.currentPageIndex]];
+    if ([self.recordView currentScore] > 0.00f) {
+        [self playSoundOfURL:self.recordView.recordedSoundURLs[self.currentPageIndex]];
+    } else {
+        [self playSoundOfURL:originSoundURLs[self.currentPageIndex]];
+    }
+//    [self playSoundOfURL:self.recordView.recordedSoundURLs[self.currentPageIndex]];
 }
 
 - (void)turnToFirstPage {
